@@ -42,14 +42,14 @@ reviews = list()
 for line in chresReview:
 	jLine = json.loads(line)
 	id = jLine['business_id']
-	if id in ids[0]:
+	if id in ids[20]:
 		r_number += 1
 		str = " ".join(jLine['text'])
 		reviews.append(str)
 
-# print reviews
+print "review numbers: {}".format(r_number)
 
-reviews2 = list()
+reviews2 = list()   #split reviews into a list
 for string in reviews:
 	reviews2.append(string.split())
 	
@@ -59,16 +59,23 @@ dictionary.save('dictionary.dict')
 # print(dictionary)
 
 corpus = [dictionary.doc2bow(review) for review in reviews2]
-# print (corpus)
+#print "corpus :", corpus
 gensim.corpora.MmCorpus.serialize('corpus.mm', corpus)
 
 tfidf = gensim.models.TfidfModel(corpus)
 
-lda = gensim.models.LdaModel(corpus = corpus, id2word = dictionary, num_topics=50, update_every=1, chunksize=1000, passes=1)
+lda = gensim.models.ldamodel.LdaModel(corpus = corpus, id2word = dictionary, num_topics=10, update_every=0, passes=20)
 topicArray =  lda.print_topics(10)
 
 for i, topic in enumerate(topicArray):
 	print('*Topic {}\n- {}'.format(i, topic))
+
+print "distribution 0 : ", lda[corpus[0]]
+print "distribution 1 : ", lda[corpus[1]]
+print "distribution 2 : ", lda[corpus[2]]
+print "distribution 3 : ", lda[corpus[3]]
+print "distribution 4 : ", lda[corpus[4]]
+print "distribution 5 : ", lda[corpus[5]]
 
 
 # t = vectorize(reviews)
