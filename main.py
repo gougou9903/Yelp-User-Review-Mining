@@ -9,6 +9,8 @@ import gensim
 
 from tokenization import tokenization
 from vectorization import vectorize
+from textblob import TextBlob
+
 
 def get_tokens():
 	with open('data/chres_review.json') as reviewFile:
@@ -38,7 +40,7 @@ for line in chresBuss:
 print ids[0]
 
 r_number = 0   #number of reviews per res
-reviews = list()
+reviews = list()  # Modified reviews
 for line in chresReview:
 	jLine = json.loads(line)
 	id = jLine['business_id']
@@ -59,7 +61,7 @@ dictionary.save('dictionary.dict')
 # print(dictionary)
 
 corpus = [dictionary.doc2bow(review) for review in reviews2]
-#print "corpus :", corpus
+print "corpus :", len(corpus)
 gensim.corpora.MmCorpus.serialize('corpus.mm', corpus)
 
 tfidf = gensim.models.TfidfModel(corpus)
@@ -67,34 +69,57 @@ tfidf = gensim.models.TfidfModel(corpus)
 lda = gensim.models.ldamodel.LdaModel(corpus = corpus, id2word = dictionary, num_topics=10, update_every=0, passes=20)
 topicArray =  lda.print_topics(10)
 
-for i, topic in enumerate(topicArray):
-	print('*Topic {}\n- {}'.format(i, topic))
+print topicArray
+# for i, topic in enumerate(topicArray):
+# 	print('*Topic {}\n- {}'.format(i, topic))
 
-print "distribution 0 : ", lda[corpus[0]]
-print "distribution 1 : ", lda[corpus[1]]
-print "distribution 2 : ", lda[corpus[2]]
-print "distribution 3 : ", lda[corpus[3]]
-print "distribution 4 : ", lda[corpus[4]]
-print "distribution 5 : ", lda[corpus[5]]
+print "distribution 0 : ", lda[corpus[0]] #test
+print lda[corpus[0]][0][0]
 
 
-# t = vectorize(reviews)
-# feature_names = vectorization.tfidf.get_feature_names()
-# 
-# print t
+#get the original reviews to do sentiment analysis
 
-# for col in t.nonzero()[1]:
-# 	print feature_names[col], ' - ', t[2, col]
-# 
-# model = lda.LDA(n_topics=5, n_iter=1500, random_state=1)
-# model.fit(t.toarray())
+chresReviewOrig = open('data/chres_review.json')
+reviewsOrig = list()
+stars = list()
+for line in chresReviewOrig:
+	jLine = json.loads(line)
+	id = jLine['business_id']
+	if id in ids[20]:
+		str = jLine['text']
+		stars.append(jLine['stars'])
+		reviewsOrig.append(str)
+			
+# blob0 = TextBlob(reviewsOrig[20])
+# blob1 = TextBlob(reviewsOrig[21])
+# blob2 = TextBlob(reviewsOrig[22])
+# blob3 = TextBlob(reviewsOrig[23])
+# blob4 = TextBlob(reviewsOrig[24])
+# print "blob0: ", blob0.sentiment
+# print "stars: ", stars[20]
+# print "blob1: ", blob1.sentiment
+# print "stars: ", stars[21]
+# print "blob2: ", blob2.sentiment
+# print "stars: ", stars[22]
+# print "blob3: ", blob3.sentiment
+# print "stars: ", stars[23]
+# print "blob4: ", blob4.sentiment
+# print "stars: ", stars[24]
 
-# gCorpus = gensim.matutils.Sparse2Corpus(t, documents_columns=True)
-# print gCorpus
+scoreList = list()
+for i, review in enumerate(reviewsOrig):
+	blob = TextBlob(review)
+	score = blob.sentiment.polarity * stars[i]
+	scoreList.append(score)
+	
+print len(scoreList)
+print "max: " , max(scoreList)
+print "min: " , min(scoreList)
 
-# print feature_names
-
-# lda = gensim.models.ldamodel.LdaModel(corpus=gCorpus,num_topics=10)
-# print lda.print_topics(5)
+#get reviews for one specific topic
+topic0Reviews = list()
+for i,corp in enumerate(corpus):
+	if lda[corp][0][0] == 0:
+		print "topic0 reviews: ", reviewsOrig[i]
 
 
