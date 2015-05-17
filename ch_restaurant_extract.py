@@ -13,3 +13,4 @@ with open('data/chinese_restaurants.json','w+') as chres:
                    #print jdata
         #print jdata  
     print "chinese_restaurant.json succefully created.",i
+
